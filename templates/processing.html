@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Processing | ParkWise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d0f14; --card:#161922; --accent:#f5c518;
+    --green:#22c55e; --text:#e8eaf0; --muted:#6b7280; --border:#252833;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+
+  /* Animated background rings */
+  .rings {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .ring {
+    position:absolute; border-radius:50%;
+    border:1px solid rgba(245,197,24,0.08);
+    animation:expand 3s ease-out infinite;
+  }
+  .ring:nth-child(1) { width:200px; height:200px; animation-delay:0s; }
+  .ring:nth-child(2) { width:350px; height:350px; animation-delay:0.5s; }
+  .ring:nth-child(3) { width:500px; height:500px; animation-delay:1s; }
+  .ring:nth-child(4) { width:650px; height:650px; animation-delay:1.5s; }
+  @keyframes expand {
+    0% { opacity:0.6; transform:scale(0.8); }
+    100% { opacity:0; transform:scale(1.2); }
+  }
+
+  .card {
+    background:var(--card); border:1px solid var(--border); border-radius:24px;
+    padding:48px 40px; text-align:center;
+    width:100%; max-width:380px; position:relative; z-index:1;
+    animation:popIn 0.5s cubic-bezier(.23,1,.32,1) both;
+  }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+
+  /* Spinner */
+  .spinner-wrap { margin-bottom:28px; }
+  .spinner {
+    width:72px; height:72px; margin:0 auto;
+    border-radius:50%;
+    border:3px solid var(--border);
+    border-top-color:var(--accent);
+    animation:spin 0.8s linear infinite;
+    position:relative;
+  }
+  .spinner::after {
+    content:'🅿';
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px; animation:spinReverse 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes spinReverse { to { transform:rotate(-360deg); } }
+
+  h1 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:8px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:32px; }
+
+  /* Steps checklist */
+  .checklist { text-align:left; margin-bottom:28px; }
+  .check-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 0; font-size:14px; color:var(--muted);
+    border-bottom:1px solid var(--border);
+    transition:color 0.3s;
+  }
+  .check-item:last-child { border-bottom:none; }
+  .check-item.done { color:var(--text); }
+  .check-icon {
+    width:22px; height:22px; border-radius:50%;
+    border:2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; flex-shrink:0; transition:all 0.3s;
+  }
+  .check-item.done .check-icon { background:var(--green); border-color:var(--green); color:#0d0f14; }
+  .check-item.active .check-icon { border-color:var(--accent); }
+  .check-item.active { color:var(--text); }
+
+  .amount-badge {
+    background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.2);
+    border-radius:12px; padding:12px 20px;
+    font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--accent);
+  }
+  .amount-badge span { font-size:12px; font-weight:400; color:var(--muted); display:block; margin-bottom:2px; }
+</style>
+</head>
+<body>
+<div class="rings">
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+</div>
+
+<div class="card">
+  <div class="spinner-wrap">
+    <div class="spinner" id="spinner"></div>
+  </div>
+
+  <h1>Processing Payment</h1>
+  <p class="sub">Please wait, do not close this page</p>
+
+  <div class="checklist">
+    <div class="check-item active" id="step1">
+      <div class="check-icon" id="icon1">1</div>
+      <span>Verifying payment details</span>
+    </div>
+    <div class="check-item" id="step2">
+      <div class="check-icon" id="icon2">2</div>
+      <span>Reserving your parking slot</span>
+    </div>
+    <div class="check-item" id="step3">
+      <div class="check-icon" id="icon3">3</div>
+      <span>Generating booking confirmation</span>
+    </div>
+  </div>
+
+  <div class="amount-badge">
+    <span>Amount</span>
+    ₹{{ total }}
+  </div>
+</div>
+
+<script>
+  // Animate checklist steps then redirect
+  function markDone(id, iconId) {
+    const el = document.getElementById(id);
+    const icon = document.getElementById(iconId);
+    el.classList.remove('active');
+    el.classList.add('done');
+    icon.textContent = '✓';
+  }
+  function markActive(id) {
+    document.getElementById(id).classList.add('active');
+  }
+
+  setTimeout(() => { markDone('step1','icon1'); markActive('step2'); }, 800);
+  setTimeout(() => { markDone('step2','icon2'); markActive('step3'); }, 1800);
+  setTimeout(() => {
+    markDone('step3','icon3');
+    document.getElementById('spinner').style.borderTopColor = '#22c55e';
+  }, 2600);
+  setTimeout(() => {
+    window.location.href = '/confirm';
+  }, 3200);
+</script>
+</body>
+</html>

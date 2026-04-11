@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Book Slot | ParkWise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d0f14; --card:#161922; --accent:#f5c518;
+    --accent2:#ff6b35; --green:#22c55e; --text:#e8eaf0; --muted:#6b7280; --border:#252833;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 36px; border-bottom:1px solid var(--border); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:#0d0f14; }
+  .logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:17px; }
+  .logo-text span { color:var(--accent); }
+  .back-btn { color:var(--muted); text-decoration:none; font-size:14px; }
+  .back-btn:hover { color:var(--text); }
+
+  .steps { display:flex; align-items:center; justify-content:center; gap:0; padding:28px 36px 0; }
+  .step { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .step.done { color:#22c55e; }
+  .step.active { color:var(--accent); }
+  .step-num { width:26px; height:26px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .step.done .step-num { background:#22c55e; border-color:#22c55e; color:#0d0f14; }
+  .step-line { width:40px; height:2px; background:var(--border); margin:0 4px; }
+
+  .content { flex:1; display:flex; justify-content:center; padding:40px 20px; }
+  .form-card {
+    background:var(--card); border:1px solid var(--border); border-radius:20px;
+    padding:36px; width:100%; max-width:520px; height:fit-content;
+    animation:fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+
+  .slot-summary {
+    display:flex; align-items:center; gap:16px;
+    background:var(--bg); border:1px solid var(--border); border-radius:14px;
+    padding:16px 20px; margin-bottom:28px;
+  }
+  .slot-icon { font-size:28px; }
+  .slot-info h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:2px; }
+  .slot-info p { font-size:13px; color:var(--muted); }
+  .slot-rate { margin-left:auto; text-align:right; }
+  .slot-rate .rate { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--accent); }
+  .slot-rate .per { font-size:11px; color:var(--muted); }
+
+  h2 { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:24px; }
+
+  .field { margin-bottom:20px; }
+  label { display:block; font-size:11px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  input[type=datetime-local] {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    border-radius:10px; padding:13px 16px;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px;
+    outline:none; transition:border-color 0.2s;
+    color-scheme: dark;
+  }
+  input[type=datetime-local]:focus { border-color:var(--accent); }
+
+  /* Valet toggle */
+  .valet-section { margin-bottom:28px; }
+  .valet-toggle {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg); border:1px solid var(--border); border-radius:14px;
+    padding:16px 20px; cursor:pointer;
+    transition:border-color 0.2s;
+  }
+  .valet-toggle:hover { border-color:rgba(245,197,24,0.3); }
+  .valet-toggle.selected { border-color:var(--accent); background:rgba(245,197,24,0.05); }
+
+  .valet-left { display:flex; align-items:center; gap:12px; }
+  .valet-icon { font-size:24px; }
+  .valet-title { font-size:15px; font-weight:500; margin-bottom:2px; }
+  .valet-desc { font-size:12px; color:var(--muted); }
+  .valet-price { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--accent); }
+
+  /* Live price preview */
+  .price-preview {
+    background:rgba(245,197,24,0.06); border:1px solid rgba(245,197,24,0.15);
+    border-radius:12px; padding:16px 20px; margin-bottom:24px;
+    display:none;
+  }
+  .price-preview.show { display:block; }
+  .price-row { display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px; color:var(--muted); }
+  .price-row.total { color:var(--text); font-weight:600; font-size:16px; margin-bottom:0; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+  .price-row span:last-child { color:var(--accent); }
+
+  button[type=submit] {
+    width:100%; background:var(--accent); color:#0d0f14;
+    border:none; border-radius:12px; padding:15px;
+    font-family:'Syne',sans-serif; font-size:15px; font-weight:700;
+    cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+  }
+  button[type=submit]:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(245,197,24,0.3); }
+
+  @media (max-width:500px) {
+    nav { padding:14px 18px; }
+    .content { padding:24px 12px; }
+    .form-card { padding:24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">P</div>
+    <div class="logo-text">Park<span>Wise</span></div>
+  </div>
+  <a href="javascript:history.back()" class="back-btn">← Back</a>
+</nav>
+
+<div class="steps">
+  <div class="step done"><div class="step-num">✓</div><span>Vehicle</span></div>
+  <div class="step-line"></div>
+  <div class="step done"><div class="step-num">✓</div><span>Location</span></div>
+  <div class="step-line"></div>
+  <div class="step done"><div class="step-num">✓</div><span>Slot</span></div>
+  <div class="step-line"></div>
+  <div class="step active"><div class="step-num">4</div><span>Payment</span></div>
+</div>
+
+<div class="content">
+  <div class="form-card">
+
+    <div class="slot-summary">
+      <div class="slot-icon">{{ '🚗' if vehicle_type == 'car' else '🏍️' }}</div>
+      <div class="slot-info">
+        <h3>Slot #{{ slot_id }}</h3>
+        <p>📍 {{ location }}</p>
+      </div>
+      <div class="slot-rate">
+        <div class="rate">₹{{ price }}</div>
+        <div class="per">per hour</div>
+      </div>
+    </div>
+
+    <h2>Set your parking time</h2>
+
+    <form method="POST" action="/calculate">
+      <input type="hidden" name="slot_id" value="{{ slot_id }}"/>
+      <input type="hidden" name="valet" id="valetInput" value="no"/>
+
+      <div class="field">
+        <label>Entry Time</label>
+        <input type="datetime-local" name="entry" id="entryTime" required/>
+      </div>
+
+      <div class="field">
+        <label>Exit Time</label>
+        <input type="datetime-local" name="exit" id="exitTime" required/>
+      </div>
+
+      <!-- Valet -->
+      <div class="valet-section">
+        <label>Add Valet Service?</label>
+        <div class="valet-toggle" id="valetToggle" onclick="toggleValet()">
+          <div class="valet-left">
+            <div class="valet-icon">🚐</div>
+            <div>
+              <div class="valet-title">Valet Parking</div>
+              <div class="valet-desc">We park &amp; retrieve your vehicle for you</div>
+            </div>
+          </div>
+          <div class="valet-price">+₹30</div>
+        </div>
+      </div>
+
+      <!-- Live price preview -->
+      <div class="price-preview" id="pricePreview">
+        <div class="price-row"><span>Duration</span><span id="previewHours">—</span></div>
+        <div class="price-row"><span>Parking (₹{{ price }}/hr)</span><span id="previewBase">—</span></div>
+        <div class="price-row" id="valetRow" style="display:none;"><span>Valet</span><span>₹30</span></div>
+        <div class="price-row total"><span>Estimated Total</span><span id="previewTotal">—</span></div>
+      </div>
+
+      <button type="submit">Proceed to Payment →</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const pricePerHour = {{ price }};
+  let valetSelected = false;
+
+  // Set min datetime to now
+  function setMinTime() {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const fmt = now.toISOString().slice(0, 16);
+    document.getElementById('entryTime').min = fmt;
+    document.getElementById('exitTime').min = fmt;
+  }
+  setMinTime();
+
+  function toggleValet() {
+    valetSelected = !valetSelected;
+    document.getElementById('valetInput').value = valetSelected ? 'yes' : 'no';
+    document.getElementById('valetToggle').classList.toggle('selected', valetSelected);
+    document.getElementById('valetRow').style.display = valetSelected ? 'flex' : 'none';
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const entry = document.getElementById('entryTime').value;
+    const exit = document.getElementById('exitTime').value;
+    if (!entry || !exit) return;
+
+    const diff = (new Date(exit) - new Date(entry)) / 1000;
+    if (diff <= 0) return;
+
+    const hours = Math.max(diff / 3600, 1);
+    const base = hours * pricePerHour;
+    const total = base + (valetSelected ? 30 : 0);
+
+    document.getElementById('previewHours').textContent = hours.toFixed(1) + ' hr(s)';
+    document.getElementById('previewBase').textContent = '₹' + base.toFixed(2);
+    document.getElementById('previewTotal').textContent = '₹' + total.toFixed(2);
+    document.getElementById('pricePreview').classList.add('show');
+  }
+
+  document.getElementById('entryTime').addEventListener('change', updatePreview);
+  document.getElementById('exitTime').addEventListener('change', updatePreview);
+</script>
+</body>
+</html>

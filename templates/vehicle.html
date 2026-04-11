@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Select Vehicle | ParkWise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d0f14; --card:#161922; --accent:#f5c518;
+    --accent2:#ff6b35; --text:#e8eaf0; --muted:#6b7280; --border:#252833;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 36px; border-bottom:1px solid var(--border);
+  }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:#0d0f14; }
+  .logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:17px; }
+  .logo-text span { color:var(--accent); }
+  .back-btn { color:var(--muted); text-decoration:none; font-size:14px; transition:color 0.2s; }
+  .back-btn:hover { color:var(--text); }
+
+  /* Steps */
+  .steps {
+    display:flex; align-items:center; justify-content:center; gap:0;
+    padding:28px 36px 0;
+  }
+  .step { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .step.active { color:var(--accent); }
+  .step.done { color:var(--green); }
+  .step-num {
+    width:26px; height:26px; border-radius:50%;
+    border:2px solid currentColor;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; flex-shrink:0;
+  }
+  .step-line { width:40px; height:2px; background:var(--border); margin:0 4px; }
+  .step.active .step-line, .step.done .step-line { background:var(--accent); }
+
+  .content {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:40px 20px;
+  }
+  h1 {
+    font-family:'Syne',sans-serif; font-size:28px; font-weight:800;
+    text-align:center; margin-bottom:8px;
+  }
+  .sub { color:var(--muted); font-size:15px; text-align:center; margin-bottom:40px; }
+
+  .error {
+    background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3);
+    border-radius:10px; padding:12px 20px; font-size:13px; color:var(--accent2);
+    margin-bottom:24px; text-align:center;
+  }
+
+  .vehicle-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:20px;
+    width:100%; max-width:520px;
+  }
+
+  .vehicle-btn {
+    background:var(--card); border:2px solid var(--border); border-radius:20px;
+    padding:36px 24px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .vehicle-btn::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(245,197,24,0.08) 0%, transparent 65%);
+    opacity:0; transition:opacity 0.3s;
+  }
+  .vehicle-btn:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.3); }
+  .vehicle-btn:hover::before { opacity:1; }
+
+  .vehicle-icon { font-size:56px; line-height:1; }
+  .vehicle-label { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .vehicle-desc { font-size:13px; color:var(--muted); text-align:center; line-height:1.4; }
+  .vehicle-price {
+    background:rgba(245,197,24,0.1); color:var(--accent);
+    border:1px solid rgba(245,197,24,0.2);
+    border-radius:8px; padding:4px 12px; font-size:12px; font-weight:600;
+  }
+
+  @media (max-width:480px) {
+    .vehicle-grid { grid-template-columns:1fr; max-width:300px; }
+    nav { padding:14px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">P</div>
+    <div class="logo-text">Park<span>Wise</span></div>
+  </div>
+  <a href="/dashboard" class="back-btn">← Dashboard</a>
+</nav>
+
+<!-- Steps -->
+<div class="steps">
+  <div class="step active">
+    <div class="step-num">1</div>
+    <span>Vehicle</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <span>Location</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <span>Slot</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <span>Payment</span>
+  </div>
+</div>
+
+<div class="content">
+  <h1>What are you parking?</h1>
+  <p class="sub">Choose your vehicle type to see available slots</p>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <div class="vehicle-grid">
+      <button type="submit" name="vehicle" value="car" class="vehicle-btn">
+        <div class="vehicle-icon">🚗</div>
+        <div class="vehicle-label">Car</div>
+        <div class="vehicle-desc">Sedan, SUV, hatchback or any 4-wheeler</div>
+        <div class="vehicle-price">From ₹50/hr</div>
+      </button>
+      <button type="submit" name="vehicle" value="bike" class="vehicle-btn">
+        <div class="vehicle-icon">🏍️</div>
+        <div class="vehicle-label">Bike</div>
+        <div class="vehicle-desc">Motorcycle, scooter or any 2-wheeler</div>
+        <div class="vehicle-price">From ₹20/hr</div>
+      </button>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>

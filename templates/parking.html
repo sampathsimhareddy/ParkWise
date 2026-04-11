@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Choose Slot | ParkWise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d0f14; --card:#161922; --accent:#f5c518;
+    --accent2:#ff6b35; --green:#22c55e; --text:#e8eaf0; --muted:#6b7280; --border:#252833;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 36px; border-bottom:1px solid var(--border); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:#0d0f14; }
+  .logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:17px; }
+  .logo-text span { color:var(--accent); }
+  .back-btn { color:var(--muted); text-decoration:none; font-size:14px; transition:color 0.2s; }
+  .back-btn:hover { color:var(--text); }
+
+  .steps { display:flex; align-items:center; justify-content:center; gap:0; padding:28px 36px 0; }
+  .step { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .step.done { color:#22c55e; }
+  .step.active { color:var(--accent); }
+  .step-num { width:26px; height:26px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .step.done .step-num { background:#22c55e; border-color:#22c55e; color:#0d0f14; }
+  .step-line { width:40px; height:2px; background:var(--border); margin:0 4px; }
+
+  .content { flex:1; padding:36px; max-width:900px; margin:0 auto; width:100%; }
+
+  .page-header { margin-bottom:28px; }
+  .page-header h1 { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; margin-bottom:6px; }
+  .context-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.2);
+    border-radius:20px; padding:5px 14px; font-size:13px; color:var(--accent);
+  }
+
+  /* Slot Grid */
+  .slots-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;
+  }
+
+  .slot-card {
+    background:var(--card); border:2px solid var(--border); border-radius:18px;
+    padding:24px; cursor:pointer;
+    transition:all 0.2s;
+    animation:fadeUp 0.4s ease both;
+    position:relative; overflow:hidden;
+  }
+  .slot-card::after {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--accent); transform:scaleX(0); transform-origin:left;
+    transition:transform 0.3s;
+  }
+  .slot-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.3); }
+  .slot-card:hover::after { transform:scaleX(1); }
+
+  .slot-num {
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
+    color:var(--muted); margin-bottom:16px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .slot-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+
+  .slot-type { font-size:32px; margin-bottom:10px; }
+  .slot-id { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:4px; }
+  .slot-loc { font-size:12px; color:var(--muted); margin-bottom:16px; }
+
+  .slot-price {
+    font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--accent);
+    margin-bottom:16px;
+  }
+  .slot-price span { font-size:13px; font-weight:400; color:var(--muted); }
+
+  .btn-select {
+    display:block; width:100%; text-align:center;
+    background:var(--accent); color:#0d0f14;
+    border-radius:10px; padding:11px;
+    text-decoration:none;
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+    transition:box-shadow 0.2s;
+  }
+  .btn-select:hover { box-shadow:0 6px 20px rgba(245,197,24,0.3); }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+
+  .empty-state {
+    text-align:center; padding:60px 20px;
+    background:var(--card); border:1px dashed var(--border); border-radius:16px;
+  }
+  .empty-state h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:8px; }
+  .empty-state p { color:var(--muted); font-size:14px; margin-bottom:20px; }
+  .btn-back { display:inline-block; padding:12px 24px; background:var(--accent); color:#0d0f14; border-radius:10px; text-decoration:none; font-family:'Syne',sans-serif; font-weight:700; font-size:14px; }
+
+  @media (max-width:500px) {
+    nav { padding:14px 18px; }
+    .content { padding:24px 16px; }
+    .steps { padding:20px 16px 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">P</div>
+    <div class="logo-text">Park<span>Wise</span></div>
+  </div>
+  <a href="/location?vehicle={{ vehicle_type }}" class="back-btn">← Back</a>
+</nav>
+
+<div class="steps">
+  <div class="step done"><div class="step-num">✓</div><span>Vehicle</span></div>
+  <div class="step-line"></div>
+  <div class="step done"><div class="step-num">✓</div><span>Location</span></div>
+  <div class="step-line"></div>
+  <div class="step active"><div class="step-num">3</div><span>Slot</span></div>
+  <div class="step-line"></div>
+  <div class="step"><div class="step-num">4</div><span>Payment</span></div>
+</div>
+
+<div class="content">
+  <div class="page-header">
+    <h1>Available Slots</h1>
+    <div class="context-row">
+      <div class="tag">📍 {{ location }}</div>
+      <div class="tag">{{ '🚗 Car' if vehicle_type == 'car' else '🏍️ Bike' }}</div>
+      <div class="tag">🟢 {{ slots|length }} available</div>
+    </div>
+  </div>
+
+  {% if slots %}
+  <div class="slots-grid">
+    {% for slot in slots %}
+    <div class="slot-card" style="animation-delay:{{ loop.index0 * 0.06 }}s">
+      <div class="slot-num">
+        <div class="slot-dot"></div>
+        Available
+      </div>
+      <div class="slot-type">{{ '🚗' if slot[2] == 'car' else '🏍️' }}</div>
+      <div class="slot-id">Slot #{{ slot[0] }}</div>
+      <div class="slot-loc">{{ slot[1] }}</div>
+      <div class="slot-price">₹{{ slot[4] }}<span>/hr</span></div>
+      <a href="/book/{{ slot[0] }}" class="btn-select">Select This Slot →</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size:48px;margin-bottom:16px;">😕</div>
+    <h3>No slots available</h3>
+    <p>All slots at <strong>{{ location }}</strong> are currently booked for {{ vehicle_type }}s.<br/>Try a different location.</p>
+    <a href="/location?vehicle={{ vehicle_type }}" class="btn-back">Try Another Location</a>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

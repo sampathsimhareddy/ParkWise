@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Select Location | ParkWise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d0f14; --card:#161922; --accent:#f5c518;
+    --accent2:#ff6b35; --text:#e8eaf0; --muted:#6b7280; --border:#252833;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 36px; border-bottom:1px solid var(--border); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:#0d0f14; }
+  .logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:17px; }
+  .logo-text span { color:var(--accent); }
+  .back-btn { color:var(--muted); text-decoration:none; font-size:14px; transition:color 0.2s; }
+  .back-btn:hover { color:var(--text); }
+
+  .steps { display:flex; align-items:center; justify-content:center; gap:0; padding:28px 36px 0; }
+  .step { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .step.done { color:#22c55e; }
+  .step.active { color:var(--accent); }
+  .step-num { width:26px; height:26px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .step.done .step-num { background:#22c55e; border-color:#22c55e; color:#0d0f14; }
+  .step-line { width:40px; height:2px; background:var(--border); margin:0 4px; }
+
+  .content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; }
+  h1 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; text-align:center; margin-bottom:8px; }
+  .sub { color:var(--muted); font-size:15px; text-align:center; margin-bottom:36px; }
+
+  .selected-vehicle {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.2);
+    border-radius:20px; padding:6px 16px;
+    font-size:13px; color:var(--accent); font-weight:500;
+    margin-bottom:32px;
+  }
+
+  .error { background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.3); border-radius:10px; padding:12px 20px; font-size:13px; color:var(--accent2); margin-bottom:20px; text-align:center; }
+
+  .form-wrap { width:100%; max-width:460px; }
+
+  .input-wrap { position:relative; margin-bottom:16px; }
+  .input-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:18px; pointer-events:none; }
+  input[type=text] {
+    width:100%; background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:15px 16px 15px 48px;
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px;
+    outline:none; transition:border-color 0.2s;
+  }
+  input[type=text]:focus { border-color:var(--accent); }
+
+  .quick-locations {
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;
+  }
+  .quick-loc {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:7px 14px; font-size:13px; color:var(--muted);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .quick-loc:hover { border-color:var(--accent); color:var(--accent); }
+
+  .qlabel { font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); margin-bottom:10px; }
+
+  button[type=submit] {
+    width:100%; background:var(--accent); color:#0d0f14;
+    border:none; border-radius:12px; padding:15px;
+    font-family:'Syne',sans-serif; font-size:15px; font-weight:700;
+    cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+  }
+  button[type=submit]:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(245,197,24,0.3); }
+
+  /* Pricing hint */
+  .price-hint {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-bottom:28px;
+  }
+  .price-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:12px; text-align:center;
+  }
+  .price-card .loc-name { font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .price-card .loc-price { font-size:13px; font-weight:600; color:var(--accent); }
+
+  @media (max-width:500px) {
+    nav { padding:14px 18px; }
+    .content { padding:28px 16px; }
+    .price-hint { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">P</div>
+    <div class="logo-text">Park<span>Wise</span></div>
+  </div>
+  <a href="/vehicle" class="back-btn">← Back</a>
+</nav>
+
+<div class="steps">
+  <div class="step done"><div class="step-num">✓</div><span>Vehicle</span></div>
+  <div class="step-line"></div>
+  <div class="step active"><div class="step-num">2</div><span>Location</span></div>
+  <div class="step-line"></div>
+  <div class="step"><div class="step-num">3</div><span>Slot</span></div>
+  <div class="step-line"></div>
+  <div class="step"><div class="step-num">4</div><span>Payment</span></div>
+</div>
+
+<div class="content">
+  <h1>Where do you want to park?</h1>
+  <p class="sub">Enter your destination area in Hyderabad</p>
+
+  <div class="selected-vehicle">
+    {{ '🚗 Car' if vehicle == 'car' else '🏍️ Bike' }} selected
+  </div>
+
+  {% if error %}
+  <div class="error" style="width:100%;max-width:460px;">{{ error }}</div>
+  {% endif %}
+
+  <div class="form-wrap">
+    <form method="POST">
+      <input type="hidden" name="vehicle" value="{{ vehicle }}"/>
+      <div class="input-wrap">
+        <span class="input-icon">📍</span>
+        <input type="text" name="location" id="locationInput" placeholder="e.g. Ameerpet, Hitech City..." required autofocus/>
+      </div>
+
+      <div class="qlabel">Popular locations</div>
+      <div class="quick-locations">
+        <div class="quick-loc" onclick="setLoc('Ameerpet')">Ameerpet</div>
+        <div class="quick-loc" onclick="setLoc('Hitech City')">Hitech City</div>
+        <div class="quick-loc" onclick="setLoc('Gachibowli')">Gachibowli</div>
+        <div class="quick-loc" onclick="setLoc('Madhapur')">Madhapur</div>
+        <div class="quick-loc" onclick="setLoc('Begumpet')">Begumpet</div>
+      </div>
+
+      <div class="qlabel">Pricing guide ({{ vehicle }})</div>
+      <div class="price-hint">
+        {% if vehicle == 'car' %}
+        <div class="price-card"><div class="loc-name">Ameerpet</div><div class="loc-price">₹50/hr</div></div>
+        <div class="price-card"><div class="loc-name">Begumpet</div><div class="loc-price">₹70/hr</div></div>
+        <div class="price-card"><div class="loc-name">Hitech City</div><div class="loc-price">₹80/hr</div></div>
+        <div class="price-card"><div class="loc-name">Madhapur</div><div class="loc-price">₹90/hr</div></div>
+        <div class="price-card"><div class="loc-name">Gachibowli</div><div class="loc-price">₹100/hr</div></div>
+        <div class="price-card"><div class="loc-name">Other</div><div class="loc-price">₹60/hr</div></div>
+        {% else %}
+        <div class="price-card"><div class="loc-name">Ameerpet</div><div class="loc-price">₹20/hr</div></div>
+        <div class="price-card"><div class="loc-name">Begumpet</div><div class="loc-price">₹28/hr</div></div>
+        <div class="price-card"><div class="loc-name">Hitech City</div><div class="loc-price">₹30/hr</div></div>
+        <div class="price-card"><div class="loc-name">Madhapur</div><div class="loc-price">₹35/hr</div></div>
+        <div class="price-card"><div class="loc-name">Gachibowli</div><div class="loc-price">₹40/hr</div></div>
+        <div class="price-card"><div class="loc-name">Other</div><div class="loc-price">₹25/hr</div></div>
+        {% endif %}
+      </div>
+
+      <button type="submit">Find Available Slots →</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function setLoc(name) {
+  document.getElementById('locationInput').value = name;
+  document.getElementById('locationInput').focus();
+}
+</script>
+</body>
+</html>
